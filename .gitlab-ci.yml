@@ -1,0 +1,62 @@
+variables:
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: tcp://docker:2375/
+
+  # When using dind, it's wise to use the overlayfs driver for
+  # improved performance..
+  DOCKER_DRIVER: overlay2
+
+  # CI build base image
+  CI_BUILD_BASE_IMG: "registry.gitlab.com/cerebrum-dockerbase/ci-build-dockerbase"
+  # CI deploy base images...
+  CI_DEPLOY_BASE_IMG: "registry.gitlab.com/cerebrum-dockerbase/ci-deploy-dockerbase"
+  # CI nofication base images
+  CI_NOTIFICATION_BASE_IMG: "registry.gitlab.com/cerebrum-dockerbase/ci-notification-dockerbase:latest"
+
+stages:
+  - build-docker-image
+  - helm-deployment
+  - deploy-notification
+
+build-service:
+  image: ${CI_BUILD_BASE_IMG}
+  stage: build-docker-image
+  services:
+    - docker:dind
+  before_script:
+    - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin ${CI_REGISTRY}
+  script:
+    - make dockerci
+  only:
+    - dev
+    - staging
+    - master
+
+deploy-service:
+  image: ${CI_DEPLOY_BASE_IMG}
+  stage: helm-deployment
+  script:
+    - make helminstallci
+  only:
+    - dev
+    - staging
+    - master
+  artifacts:
+    paths:
+      - JOB_STATUS_CODE
+    expire_in: 1 mins
+
+notification-service:
+  image: ${CI_NOTIFICATION_BASE_IMG}
+  stage: deploy-notification
+  before_script:
+    - export JOB_STATUS_CODE=$(cat JOB_STATUS_CODE 2>/dev/null)
+  script:
+    - make notifyci
+  after_script:
+    - make removejobstatuscode
+  only:
+    - dev
+    - staging
+    - master
+  when: always

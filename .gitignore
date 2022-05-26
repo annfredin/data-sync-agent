@@ -1,0 +1,39 @@
+# Created by https://www.gitignore.io/api/go
+# Edit at https://www.gitignore.io/?templates=go
+
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+
+### Go ###
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+### Go Patch ###
+/vendor/
+/Godeps/
+
+
+*-linux-amd64
+*-linux-amd64-proxy
+*-darwin-amd64
+*-darwin-amd64-proxy
+
+# End of https://www.gitignore.io/api/go

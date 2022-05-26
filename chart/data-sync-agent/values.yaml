@@ -1,0 +1,56 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+progressDeadlineSeconds: 60
+minReadySeconds: 5
+timeZone: Asia/Dubai
+
+image:
+  repository: registry.gitlab.com/cerebrum-datatransfer/data-sync-agent
+  tag: latest
+  pullPolicy: Always
+  pullSecret: registry-secret
+
+nameOverride: ""
+fullnameOverride: ""
+
+job:
+  intervalinSec: 30
+
+redis:
+  secretname: redis-secret
+  clustermode: 1
+  rediskeyforservers: "cb-iot-comms:dbservers"
+  rediskeyforonboardedservers: "cb-iot-onboarded-dbservers"
+  rediskeyforregistereddevice: "cb-iot-registereddevicedata"
+  rediskeyfortestdevice: "cb-iot-registeredtestdevicedata"
+  rediskeyforcryptosecret: "cb-iot-secrets:app-cerebrum"
+  redishashfieldforcryptosecret: "crypto-keys"
+  rediskeyforcommunicationgroup: "cb-iot-devicecommunicationgroup"
+  devicecountperpartition: 1000
+  redisdevicecommandchannel: "iot-commandtodevice-channel"
+
+kafka:
+  secretname: kafka-secret
+  configtopic: "common-deviceresponse-locationdata"
+
+mongo:
+  secretname: mongo-secret
+
+postgre:
+  secretname: postgres-secret
+
+service:
+  internalport: 58047
+
+logger:
+  format: json
+  level: debug
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

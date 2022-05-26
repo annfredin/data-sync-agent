@@ -1,0 +1,161 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chart.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "chart.name" . }}
+    helm.sh/chart: {{ include "chart.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    fluentd: "true"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  progressDeadlineSeconds: {{ .Values.progressDeadlineSeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 34%
+  minReadySeconds: {{ .Values.minReadySeconds }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "chart.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        fluentd: "true"
+        app.kubernetes.io/name: {{ include "chart.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: tcp
+              containerPort: {{ .Values.service.internalport}}
+              protocol: TCP
+          env:
+            - name: TZ
+              value: "{{ .Values.timeZone }}"
+            - name: CONNECTASREDISCLUSTERMODE
+              value: "{{ .Values.redis.clustermode }}"    
+            - name: CONFIGSERVERENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.redis.secretname }}
+                  key: hosts
+            - name: CONFIGSERVERUSERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.redis.secretname }}
+                  key: username
+            - name: CONFIGSERVERPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.redis.secretname }}
+                  key: password
+            - name: REDISKEYFORSERVERS
+              value: "{{ .Values.redis.rediskeyforservers }}"
+            - name: REDISKEYFORONBOARDEDSERVERS
+              value: "{{ .Values.redis.rediskeyforonboardedservers }}"
+            - name: REDISKEYFORREGISTEREDDEVICE
+              value: "{{ .Values.redis.rediskeyforregistereddevice }}"
+            - name: REDISKEYFORTESTDEVICE
+              value: "{{ .Values.redis.rediskeyfortestdevice }}"
+            - name: REDISKEYFORCRYPTOSECRET
+              value: "{{ .Values.redis.rediskeyforcryptosecret }}"
+            - name: REDISHASHFIELDFORCRYPTOSECRET
+              value: "{{ .Values.redis.redishashfieldforcryptosecret }}"
+            - name: REDISKEYFORCOMMUNICATIONGROUP
+              value: "{{ .Values.redis.rediskeyforcommunicationgroup }}"
+            - name: DEVICECOUNTPERPARTITION
+              value: "{{ .Values.redis.devicecountperpartition }}"
+            - name: REDISDEVICECOMMANDCHANNEL
+              value: "{{ .Values.redis.redisdevicecommandchannel }}"
+            - name: KAFKABROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.kafka.secretname }}
+                  key: hosts
+            - name: KAFKAUSERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.kafka.secretname }}
+                  key: username
+            - name: KAFKAPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.kafka.secretname }}
+                  key: password
+            - name: KAFKACONFIGTOPIC
+              value: "{{ .Values.kafka.configtopic }}"
+            - name: MONGOENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongo.secretname }}
+                  key: hosts
+            - name: MONGOUSERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongo.secretname }}
+                  key: username
+            - name: MONGOPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongo.secretname }}
+                  key: password
+            - name: MONGOAUTHDB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongo.secretname }}
+                  key: authdatasource
+            - name: MONGODBNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongo.secretname }}
+                  key: dbname
+
+            - name: PGSHOSTS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgre.secretname }}
+                  key: hosts
+            - name: PGSPORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgre.secretname }}
+                  key: port
+            - name: PGSUSERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgre.secretname }}
+                  key: username
+            - name: PGSPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgre.secretname }}
+                  key: password
+            - name: PGSDBNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgre.secretname }}
+                  key: dbname
+
+            - name: LOGGERLOGFORMAT
+              value: "{{ .Values.logger.format }}"
+            - name: LOGGERLOGLEVEL
+              value: "{{ .Values.logger.level }}"
+            - name: JOBINTERVALINSEC
+              value: "{{ .Values.job.intervalinSec }}"
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
+    {{- if .Values.image.pullSecret }}
+      imagePullSecrets:
+      - name: {{ .Values.image.pullSecret }}
+    {{- end }}

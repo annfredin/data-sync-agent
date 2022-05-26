@@ -1,0 +1,44 @@
+[tool.commitizen]
+name = "cz_customize"
+version = "0.1.5"
+tag_format = "$version"
+bump_message = "Release: version $current_version → $new_version"
+version_files = [
+    "chart/data-sync-agent/Chart.yaml:appVersion"
+]
+style = [
+    ["qmark", "fg:#ffea00"],
+    ["answer", "fg:#fff65b bold"],
+    ["pointer", "fg:#35bffd"],
+    ["highlighted", "fg:#fff65b"],
+    ["selected", "fg:#fff65b"],
+    ["separator", "fg:#cc5454"],
+    ["instruction", "fg:#ece6ff"],
+    ["text", "fg:#f5f5f5"],
+    ["disabled", "fg:#858585 italic"]
+]
+
+[tool.commitizen.customize]
+message_template = "{{change_type}}:{% if message %} {{message}}{% endif %}"
+example = "feature: This feature enable customize through config file"
+bump_pattern = "^(Breaking Change|New Feature|Fix|HotFix|Improvement|Docs|No Impact)"
+bump_map = {"Breaking Change" = "MAJOR", "New Feature" = "MINOR", "Fix" = "PATCH", "HotFix" = "PATCH", "Improvement"="PATCH","Doc"="","No Impact"=""}
+
+
+[[tool.commitizen.customize.questions]]
+type = "list"
+name = "change_type"
+choices = [
+{value = "No Impact", name = "No Impact -> has done some styles, formatting etc. [No Ver]."},
+{value = "Doc", name = "Doc -> Documentation changes only [No Ver]."},
+{value = "Improvement", name = "Improvement -> has some improvement in existing feature [PATCH]."},
+{value = "Fix", name = "Fix -> has some bug fix [PATCH]."},{value = "HotFix", name = "HotFix -> has hotfix for bug [PATCH]."},
+{value = "New Feature", name = "New Feature -> added some new functionalities [MINOR]."},
+{value = "Breaking Change", name = "Breaking Change -> Implemented some breaking changes [MAJOR]."}]
+message = "Commit Type: "
+
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "message"
+message = "Commit Msg: "
